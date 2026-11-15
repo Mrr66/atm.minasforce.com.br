@@ -21,7 +21,7 @@ jobs:
       - name: Mask production configuration
         shell: bash
         env:
-          VISITAS_USER: ${{ vars.VISITAS_USER }}
+          VISITAS_USER: ${{ secrets.VISITAS_USER || vars.VISITAS_USER }}
           VISITAS_PASSWORD: ${{ secrets.VISITAS_PASSWORD }}
           VISIT_HASH_SALT: ${{ secrets.VISIT_HASH_SALT }}
         run: |
@@ -69,7 +69,7 @@ jobs:
           NOTIFIQUE_PASSWORD: ${{ secrets.NOTIFIQUE_PASSWORD || vars.NOTIFIQUE_PASSWORD }}
           NOTIFIQUE_USER: ${{ vars.NOTIFIQUE_USER }}
           NOTIFIQUE_WHATSAPP_NUMBER: ${{ vars.NOTIFIQUE_WHATSAPP_NUMBER }}
-          VISITAS_USER: ${{ vars.VISITAS_USER }}
+          VISITAS_USER: ${{ secrets.VISITAS_USER || vars.VISITAS_USER }}
           VISITAS_PASSWORD: ${{ secrets.VISITAS_PASSWORD || vars.VISITAS_PASSWORD }}
           VISIT_HASH_SALT: ${{ secrets.VISIT_HASH_SALT || vars.VISIT_HASH_SALT }}
           IPWHO_API_KEY: ${{ secrets.IPWHO_API_KEY || vars.IPWHO_API_KEY }}
