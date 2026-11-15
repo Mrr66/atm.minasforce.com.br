@@ -228,3 +228,15 @@ repositório nem no pacote de deploy.
 - `ATM_SSH_USER`
 - `ATM_SSH_PASSWORD`
 - `ATM_SSH_PORT`
+
+### Painel privado de visitas
+
+O painel fica em `/visitas`, usa autenticação HTTP e não é indexado. Configure no
+environment `site_production` do GitHub:
+
+- Variable `VISITAS_USER`: nome de usuário do painel
+- Secret `VISITAS_PASSWORD`: senha forte do painel
+- Secret `VISIT_HASH_SALT`: texto aleatório longo usado para anonimizar visitantes
+- Secret opcional `IPWHO_API_KEY`: habilita a localização aproximada por IP
+
+O histórico é preservado em `/var/www/atm.minasforce.com.br/data/visits.jsonl`.

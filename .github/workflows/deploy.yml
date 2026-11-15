@@ -25,6 +25,9 @@ jobs:
           echo "::add-mask::${{ vars.NOTIFIQUE_PASSWORD }}"
           echo "::add-mask::${{ vars.NOTIFIQUE_USER }}"
           echo "::add-mask::${{ vars.NOTIFIQUE_WHATSAPP_NUMBER }}"
+          echo "::add-mask::${{ vars.VISITAS_USER }}"
+          echo "::add-mask::${{ secrets.VISITAS_PASSWORD }}"
+          echo "::add-mask::${{ secrets.VISIT_HASH_SALT }}"
 
       - name: Checkout
         uses: actions/checkout@v7
@@ -62,13 +65,17 @@ jobs:
           NOTIFIQUE_PASSWORD: ${{ secrets.NOTIFIQUE_PASSWORD || vars.NOTIFIQUE_PASSWORD }}
           NOTIFIQUE_USER: ${{ vars.NOTIFIQUE_USER }}
           NOTIFIQUE_WHATSAPP_NUMBER: ${{ vars.NOTIFIQUE_WHATSAPP_NUMBER }}
+          VISITAS_USER: ${{ vars.VISITAS_USER }}
+          VISITAS_PASSWORD: ${{ secrets.VISITAS_PASSWORD || vars.VISITAS_PASSWORD }}
+          VISIT_HASH_SALT: ${{ secrets.VISIT_HASH_SALT || vars.VISIT_HASH_SALT }}
+          IPWHO_API_KEY: ${{ secrets.IPWHO_API_KEY || vars.IPWHO_API_KEY }}
         with:
           host: ${{ secrets.ATM_SSH_HOST }}
           username: ${{ secrets.ATM_SSH_USER }}
           password: ${{ secrets.ATM_SSH_PASSWORD }}
           port: ${{ secrets.ATM_SSH_PORT }}
           command_timeout: 10m
-          envs: NOTIFIQUE_CLIENT_ID,NOTIFIQUE_PASSWORD,NOTIFIQUE_USER,NOTIFIQUE_WHATSAPP_NUMBER
+          envs: NOTIFIQUE_CLIENT_ID,NOTIFIQUE_PASSWORD,NOTIFIQUE_USER,NOTIFIQUE_WHATSAPP_NUMBER,VISITAS_USER,VISITAS_PASSWORD,VISIT_HASH_SALT,IPWHO_API_KEY
           script: |
             set -eu
             APP_DIR=/var/www/atm.minasforce.com.br
@@ -78,6 +85,8 @@ jobs:
             command -v npm >/dev/null
             command -v pm2 >/dev/null
             mkdir -p "$APP_DIR"
+            mkdir -p "$APP_DIR/data"
+            chmod 700 "$APP_DIR/data"
             tar -xzf "$PACKAGE" -C "$APP_DIR"
             cd "$APP_DIR"
             npm ci --omit=dev
@@ -87,6 +96,11 @@ jobs:
               printf 'NOTIFIQUE_PASSWORD=%s\n' "$NOTIFIQUE_PASSWORD"
               printf 'NOTIFIQUE_USER=%s\n' "$NOTIFIQUE_USER"
               printf 'NOTIFIQUE_WHATSAPP_NUMBER=%s\n' "$NOTIFIQUE_WHATSAPP_NUMBER"
+              printf 'VISITAS_USER=%s\n' "$VISITAS_USER"
+              printf 'VISITAS_PASSWORD=%s\n' "$VISITAS_PASSWORD"
+              printf 'VISIT_HASH_SALT=%s\n' "$VISIT_HASH_SALT"
+              printf 'IPWHO_API_KEY=%s\n' "$IPWHO_API_KEY"
+              printf 'VISITS_DATA_DIR=%s/data\n' "$APP_DIR"
             } > .env.tmp
             mv .env.tmp .env
             set -a

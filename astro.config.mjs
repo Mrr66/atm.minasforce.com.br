@@ -7,6 +7,6 @@ export default defineConfig({
   site: 'https://atm.minasforce.com.br',
   output: 'server',
   adapter: node({ mode: 'standalone' }),
-  integrations: [sitemap()],
+  integrations: [sitemap({ filter: (page) => !page.endsWith('/visitas') })],
   vite: { plugins: [tailwindcss()] },
 });

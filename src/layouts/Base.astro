@@ -1,18 +1,19 @@
 ---
 import '../styles/global.css';
-const { title='Assistente da Loja', description='Atendimento inteligente por voz para modernizar a experiência do cliente no varejo.' } = Astro.props;
+const {title='Assistente da Loja | Terminal de atendimento com IA',description='Terminal inteligente de autoatendimento por voz para lojas: consulta de produtos e estoque, pagamentos via PIX e integração com sistemas.',image='/images/poster-produtos.webp',noindex=false,trackVisit=true,structured=true}=Astro.props;
+const canonical=new URL(Astro.url.pathname,Astro.site||Astro.url.origin),socialImage=new URL(image,Astro.site||Astro.url.origin);
 ---
 <!doctype html><html lang="pt-BR"><head>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width"/>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>{title}</title><meta name="description" content={description}/><meta name="theme-color" content="#070b0a"/>
-<meta property="og:type" content="website"/><meta property="og:title" content={title}/><meta property="og:description" content={description}/><meta property="og:locale" content="pt_BR"/>
+<link rel="canonical" href={canonical}/>{noindex&&<meta name="robots" content="noindex, nofollow, noarchive"/>}
+<meta property="og:type" content="website"/><meta property="og:title" content={title}/><meta property="og:description" content={description}/><meta property="og:locale" content="pt_BR"/><meta property="og:site_name" content="Assistente da Loja"/><meta property="og:url" content={canonical}/><meta property="og:image" content={socialImage}/><meta property="og:image:alt" content="Terminal Assistente da Loja em operação"/>
+<meta name="twitter:card" content="summary_large_image"/><meta name="twitter:title" content={title}/><meta name="twitter:description" content={description}/><meta name="twitter:image" content={socialImage}/>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml"/>
+{structured&&<script type="application/ld+json" set:html={JSON.stringify({'@context':'https://schema.org','@type':'Product',name:'Assistente da Loja',description,brand:{'@type':'Brand',name:'Minas Force'},url:canonical.toString(),image:socialImage.toString(),category:'Terminal de autoatendimento com inteligência artificial'})}/>}
 </head><body><slot/>
-<script is:inline>
+<script is:inline define:vars={{trackVisit}}>
   const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')}),{threshold:.12});
   document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
-  if (!sessionStorage.getItem('visit-notified')) {
-    sessionStorage.setItem('visit-notified','1');
-    fetch('/api/visit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path:location.pathname}),keepalive:true}).catch(()=>{});
-  }
+  if(trackVisit&&!sessionStorage.getItem('visit-notified')){sessionStorage.setItem('visit-notified','1');fetch('/api/visit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path:location.pathname}),keepalive:true}).catch(()=>{})}
 </script></body></html>
