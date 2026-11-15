@@ -59,7 +59,7 @@ jobs:
         uses: appleboy/ssh-action@v1
         env:
           NOTIFIQUE_CLIENT_ID: ${{ vars.NOTIFIQUE_CLIENT_ID }}
-          NOTIFIQUE_PASSWORD: ${{ vars.NOTIFIQUE_PASSWORD }}
+          NOTIFIQUE_PASSWORD: ${{ secrets.NOTIFIQUE_PASSWORD || vars.NOTIFIQUE_PASSWORD }}
           NOTIFIQUE_USER: ${{ vars.NOTIFIQUE_USER }}
           NOTIFIQUE_WHATSAPP_NUMBER: ${{ vars.NOTIFIQUE_WHATSAPP_NUMBER }}
         with:
@@ -95,5 +95,4 @@ jobs:
             pm2 startOrReload ecosystem.config.cjs --env production --update-env
             pm2 save
             curl --fail --silent --show-error --retry 10 --retry-delay 2 --retry-connrefused http://127.0.0.1:4321/ >/dev/null
-            pm2 logs atm-minasforce --nostream --lines 40 || true
             rm -f "$PACKAGE"
