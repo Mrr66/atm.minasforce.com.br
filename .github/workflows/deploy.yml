@@ -18,6 +18,14 @@ jobs:
     environment: site_production
     timeout-minutes: 15
     steps:
+      - name: Mask production configuration
+        shell: bash
+        run: |
+          echo "::add-mask::${{ vars.NOTIFIQUE_CLIENT_ID }}"
+          echo "::add-mask::${{ vars.NOTIFIQUE_PASSWORD }}"
+          echo "::add-mask::${{ vars.NOTIFIQUE_USER }}"
+          echo "::add-mask::${{ vars.NOTIFIQUE_WHATSAPP_NUMBER }}"
+
       - name: Checkout
         uses: actions/checkout@v7
 
@@ -87,4 +95,5 @@ jobs:
             pm2 startOrReload ecosystem.config.cjs --env production --update-env
             pm2 save
             curl --fail --silent --show-error --retry 10 --retry-delay 2 --retry-connrefused http://127.0.0.1:4321/ >/dev/null
+            pm2 logs atm-minasforce --nostream --lines 40 || true
             rm -f "$PACKAGE"
