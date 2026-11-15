@@ -10,15 +10,12 @@
     "start": "node ./dist/server/entry.mjs"
   },
   "dependencies": {
-    "@astrojs/node": "^9.5.3",
-    "@astrojs/sitemap": "^3.6.0",
-    "@tailwindcss/vite": "^4.1.17",
-    "astro": "^5.16.0",
-    "lucide-astro": "^0.468.0",
-    "tailwindcss": "^4.1.17"
-  },
-  "optionalDependencies": {
-    "@rolldown/binding-linux-x64-gnu": "1.2.19",
-    "@rolldown/binding-win32-x64-msvc": "1.2.19"
+    "@astrojs/node": "9.5.3",
+    "@astrojs/sitemap": "3.6.0",
+    "@tailwindcss/vite": "4.1.17",
+    "astro": "5.16.0",
+    "lucide-astro": "0.468.0",
+    "tailwindcss": "4.1.17",
+    "vite": "6.4.6"
   }
 }

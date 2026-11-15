@@ -71,5 +71,5 @@ jobs:
             set +a
             pm2 startOrReload ecosystem.config.cjs --env production --update-env
             pm2 save
-            curl --fail --silent --show-error --retry 5 --retry-delay 2 http://127.0.0.1:4321/ >/dev/null
+            curl --fail --silent --show-error --retry 10 --retry-delay 2 --retry-connrefused http://127.0.0.1:4321/ >/dev/null
             rm -f "$PACKAGE"
