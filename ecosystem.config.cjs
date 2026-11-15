@@ -2,6 +2,7 @@ module.exports = {
   apps: [{
     name: 'atm-minasforce',
     script: './dist/server/entry.mjs',
+    node_args: '--env-file=.env',
     cwd: '/var/www/atm.minasforce.com.br',
     instances: 1,
     exec_mode: 'fork',
