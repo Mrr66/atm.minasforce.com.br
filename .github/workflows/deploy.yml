@@ -20,14 +20,18 @@ jobs:
     steps:
       - name: Mask production configuration
         shell: bash
+        env:
+          VISITAS_USER: ${{ vars.VISITAS_USER }}
+          VISITAS_PASSWORD: ${{ secrets.VISITAS_PASSWORD }}
+          VISIT_HASH_SALT: ${{ secrets.VISIT_HASH_SALT }}
         run: |
           echo "::add-mask::${{ vars.NOTIFIQUE_CLIENT_ID }}"
           echo "::add-mask::${{ vars.NOTIFIQUE_PASSWORD }}"
           echo "::add-mask::${{ vars.NOTIFIQUE_USER }}"
           echo "::add-mask::${{ vars.NOTIFIQUE_WHATSAPP_NUMBER }}"
-          echo "::add-mask::${{ vars.VISITAS_USER }}"
-          echo "::add-mask::${{ secrets.VISITAS_PASSWORD }}"
-          echo "::add-mask::${{ secrets.VISIT_HASH_SALT }}"
+          [ -z "$VISITAS_USER" ] || echo "::add-mask::$VISITAS_USER"
+          [ -z "$VISITAS_PASSWORD" ] || echo "::add-mask::$VISITAS_PASSWORD"
+          [ -z "$VISIT_HASH_SALT" ] || echo "::add-mask::$VISIT_HASH_SALT"
 
       - name: Checkout
         uses: actions/checkout@v7
