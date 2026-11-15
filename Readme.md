@@ -205,3 +205,26 @@ Não usar animações excessivas, pesadas ou que prejudiquem a leitura.
 - Botão de WhatsApp funcional.
 - SEO básico configurado.
 - Pronto para publicar em hospedagem estática.
+
+## Deploy contínuo na Contabo
+
+Todo push na branch `main` executa o build e publica a aplicação em
+`/var/www/atm.minasforce.com.br` pelo GitHub Actions.
+
+### Requisitos no servidor
+
+- Node.js 22
+- npm
+- PM2 instalado globalmente (`npm install -g pm2`)
+- NGINX encaminhando o domínio para `http://127.0.0.1:4321`
+- Arquivo `/var/www/atm.minasforce.com.br/.env` baseado no `.env.example`
+
+O workflow preserva o `.env` do servidor. As credenciais nunca são incluídas no
+repositório nem no pacote de deploy.
+
+### Secrets do GitHub
+
+- `ATM_SSH_HOST`
+- `ATM_SSH_USER`
+- `ATM_SSH_PASSWORD`
+- `ATM_SSH_PORT`

@@ -11,4 +11,8 @@ const { title='Assistente da Loja', description='Atendimento inteligente por voz
 <script is:inline>
   const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')}),{threshold:.12});
   document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+  if (!sessionStorage.getItem('visit-notified')) {
+    sessionStorage.setItem('visit-notified','1');
+    fetch('/api/visit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path:location.pathname}),keepalive:true}).catch(()=>{});
+  }
 </script></body></html>
