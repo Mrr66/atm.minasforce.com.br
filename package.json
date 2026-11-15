@@ -1,0 +1,19 @@
+{
+  "name": "assistente-da-loja",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@rolldown/binding-win32-x64-msvc": "1.2.19",
+    "@astrojs/sitemap": "^3.6.0",
+    "@tailwindcss/vite": "^4.1.17",
+    "astro": "^5.16.0",
+    "lucide-astro": "^0.468.0",
+    "tailwindcss": "^4.1.17"
+  }
+}
