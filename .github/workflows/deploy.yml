@@ -15,6 +15,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: site_production
     timeout-minutes: 15
     steps:
       - name: Checkout
@@ -48,12 +49,18 @@ jobs:
 
       - name: Activate release
         uses: appleboy/ssh-action@v1
+        env:
+          NOTIFIQUE_CLIENT_ID: ${{ vars.NOTIFIQUE_CLIENT_ID }}
+          NOTIFIQUE_PASSWORD: ${{ vars.NOTIFIQUE_PASSWORD }}
+          NOTIFIQUE_USER: ${{ vars.NOTIFIQUE_USER }}
+          NOTIFIQUE_WHATSAPP_NUMBER: ${{ vars.NOTIFIQUE_WHATSAPP_NUMBER }}
         with:
           host: ${{ secrets.ATM_SSH_HOST }}
           username: ${{ secrets.ATM_SSH_USER }}
           password: ${{ secrets.ATM_SSH_PASSWORD }}
           port: ${{ secrets.ATM_SSH_PORT }}
           command_timeout: 10m
+          envs: NOTIFIQUE_CLIENT_ID,NOTIFIQUE_PASSWORD,NOTIFIQUE_USER,NOTIFIQUE_WHATSAPP_NUMBER
           script: |
             set -eu
             APP_DIR=/var/www/atm.minasforce.com.br
@@ -66,6 +73,14 @@ jobs:
             tar -xzf "$PACKAGE" -C "$APP_DIR"
             cd "$APP_DIR"
             npm ci --omit=dev
+            umask 077
+            {
+              printf 'NOTIFIQUE_CLIENT_ID=%s\n' "$NOTIFIQUE_CLIENT_ID"
+              printf 'NOTIFIQUE_PASSWORD=%s\n' "$NOTIFIQUE_PASSWORD"
+              printf 'NOTIFIQUE_USER=%s\n' "$NOTIFIQUE_USER"
+              printf 'NOTIFIQUE_WHATSAPP_NUMBER=%s\n' "$NOTIFIQUE_WHATSAPP_NUMBER"
+            } > .env.tmp
+            mv .env.tmp .env
             set -a
             if [ -f .env ]; then . ./.env; fi
             set +a
