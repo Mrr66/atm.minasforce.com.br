@@ -49,20 +49,25 @@ export function visitorIp(request: Request) {
   return headers.get('cf-connecting-ip') || headers.get('x-real-ip') || forwarded || '';
 }
 
-export async function approximateLocation(ip: string) {
-  const apiKey = process.env.IPWHO_API_KEY?.trim();
-  if (!apiKey || !ip || /^(127\.|::1$|10\.|192\.168\.)/.test(ip)) return 'Localização indisponível';
+export type IpDetails = { location: string; operator: string };
+
+export async function lookupIpDetails(ip: string): Promise<IpDetails> {
+  if (!ip || /^(127\.|::1$|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(ip)) {
+    return { location: 'Localização indisponível', operator: 'Operadora indisponível' };
+  }
   try {
-    const response = await fetch(`https://api.ipwho.org/ip/${encodeURIComponent(ip)}`, {
-      headers: { Authorization: `Bearer ${apiKey}` },
-      signal: AbortSignal.timeout(3500),
-    });
-    if (!response.ok) return 'Localização indisponível';
+    const response = await fetch(`https://ipwho.is/${encodeURIComponent(ip)}`, { signal: AbortSignal.timeout(3500) });
+    if (!response.ok) throw new Error(`Consulta de IP falhou (${response.status}).`);
     const result = await response.json() as any;
-    const geo = result?.data?.geoLocation;
-    return [geo?.city, geo?.region, geo?.country].filter(Boolean).join(', ') || 'Localização indisponível';
-  } catch { return 'Localização indisponível'; }
+    if (!result?.success) throw new Error('Consulta de IP não retornou dados.');
+    return {
+      location: [result.city, result.region, result.country].filter(Boolean).join(', ') || 'Localização indisponível',
+      operator: result.connection?.isp || result.connection?.org || result.connection?.domain || 'Operadora indisponível',
+    };
+  } catch { return { location: 'Localização indisponível', operator: 'Operadora indisponível' }; }
 }
+
+export async function approximateLocation(ip: string) { return (await lookupIpDetails(ip)).location; }
 
 export function clean(value: unknown, max = 500) {
   return String(value ?? '').replace(/[<>]/g, '').trim().slice(0, max);

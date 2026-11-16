@@ -3,17 +3,18 @@ import { mkdir, readFile, appendFile } from 'node:fs/promises';
 import path from 'node:path';
 import { clean, visitorIp } from './notifique';
 
-export type Visit = { at:string; visitor:string; path:string; location:string; userAgent:string };
+export type Visit = { at:string; visitor:string; path:string; ip?:string; location:string; operator?:string; userAgent:string };
 const dataDirectory = process.env.VISITS_DATA_DIR?.trim() || path.join(process.cwd(), 'data');
 const visitsFile = path.join(dataDirectory, 'visits.jsonl');
 
-export async function recordVisit(request:Request, pagePath:string, location:string) {
-  const identity = visitorIp(request) || request.headers.get('user-agent') || 'unknown';
+export async function recordVisit(request:Request, pagePath:string, location:string, operator:string) {
+  const ip=visitorIp(request),identity = ip || request.headers.get('user-agent') || 'unknown';
   const salt = process.env.VISIT_HASH_SALT?.trim() || 'configure-visit-hash-salt';
   const visit:Visit = {
     at:new Date().toISOString(),
     visitor:createHash('sha256').update(`${salt}:${identity}`).digest('hex'),
-    path:clean(pagePath,180)||'/', location:clean(location,180)||'Localização indisponível',
+    path:clean(pagePath,180)||'/', ip:clean(ip,64)||'Indisponível', location:clean(location,180)||'Localização indisponível',
+    operator:clean(operator,180)||'Operadora indisponível',
     userAgent:clean(request.headers.get('user-agent'),240)||'Indisponível'
   };
   await mkdir(dataDirectory,{recursive:true,mode:0o700});
