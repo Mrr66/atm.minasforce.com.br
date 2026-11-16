@@ -52,11 +52,11 @@ const demos=[
   </main>
   <footer class="border-t border-white/10 py-10"><div class="shell flex flex-col gap-5 text-sm text-[#7f8c86] md:flex-row md:items-center md:justify-between"><p>© {new Date().getFullYear()} Assistente da Loja · Minas Force</p><div class="flex gap-6"><a href="/privacidade">Privacidade</a><a href="/contato">Contato</a></div></div></footer>
 
-  <dialog id="video-modal"><button class="modal-close" aria-label="Fechar"><X class="mx-auto" size={22}/></button><div class="modal-inner"><video controls playsinline></video></div></dialog>
+  <dialog id="video-modal"><button class="modal-close" aria-label="Fechar"><X class="mx-auto" size={22}/></button><div class="modal-inner"><video controls playsinline preload="metadata"></video></div></dialog>
   <script is:inline>
     const modal=document.querySelector('#video-modal'),player=modal.querySelector('video');
-    document.querySelectorAll('.demo').forEach(btn=>btn.addEventListener('click',()=>{player.src=btn.dataset.video;modal.showModal()}));
-    const close=()=>{player.pause();player.removeAttribute('src');modal.close()};
+    document.querySelectorAll('.demo').forEach(btn=>btn.addEventListener('click',async()=>{player.pause();player.src=btn.dataset.video;player.load();modal.showModal();try{await player.play()}catch{}}));
+    const close=()=>{player.pause();player.removeAttribute('src');player.load();modal.close()};
     modal.querySelector('.modal-close').addEventListener('click',close);modal.addEventListener('click',e=>{if(e.target===modal||e.target.classList.contains('modal-inner'))close()});
   </script>
 </Base>
