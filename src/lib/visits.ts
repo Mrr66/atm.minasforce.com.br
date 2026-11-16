@@ -7,6 +7,38 @@ export type Visit = { at:string; visitor:string; path:string; ip?:string; locati
 const dataDirectory = process.env.VISITS_DATA_DIR?.trim() || path.join(process.cwd(), 'data');
 const visitsFile = path.join(dataDirectory, 'visits.jsonl');
 
+const knownModels:Record<string,string>={
+  'SM-S711B':'Samsung Galaxy S23 FE',
+};
+
+export function describeDevice(userAgent:string) {
+  if (!userAgent || userAgent === 'Indisponível') return 'Dispositivo não identificado';
+  const parts:string[]=[];
+  const android=userAgent.match(/Android\s+([\d.]+)(?:;\s*([^;)]+?)(?:\s+Build\/|;|\)))/i);
+  const ios=userAgent.match(/(?:iPhone|iPad).*?OS\s([\d_]+)/i);
+
+  if (android) {
+    const rawModel=(android[2]||'').trim();
+    const model=knownModels[rawModel]
+      || (/^SM-/i.test(rawModel)?`Samsung ${rawModel}`:rawModel);
+    if(model) parts.push(model);
+    parts.push(`Android ${android[1]}`);
+  } else if (ios) {
+    parts.push(userAgent.includes('iPad')?'Apple iPad':'Apple iPhone',`iOS ${ios[1].replaceAll('_','.')}`);
+  } else if (/Windows NT/i.test(userAgent)) parts.push('Computador Windows');
+  else if (/Macintosh|Mac OS X/i.test(userAgent)) parts.push('Apple Mac');
+  else if (/Linux/i.test(userAgent)) parts.push('Computador Linux');
+
+  if (/Instagram/i.test(userAgent)) parts.push('Instagram');
+  else if (/FBAN|FBAV/i.test(userAgent)) parts.push('Facebook');
+  else if (/WhatsApp/i.test(userAgent)) parts.push('WhatsApp');
+  else if (/Edg\//i.test(userAgent)) parts.push('Microsoft Edge');
+  else if (/Chrome\//i.test(userAgent)) parts.push('Google Chrome');
+  else if (/Safari\//i.test(userAgent)) parts.push('Safari');
+
+  return parts.join(' · ')||'Dispositivo não identificado';
+}
+
 export async function recordVisit(request:Request, pagePath:string, location:string, operator:string) {
   const ip=visitorIp(request),identity = ip || request.headers.get('user-agent') || 'unknown';
   const salt = process.env.VISIT_HASH_SALT?.trim() || 'configure-visit-hash-salt';

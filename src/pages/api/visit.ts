@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { clean, lookupIpDetails, sendWhatsApp, visitorIp } from '../../lib/notifique';
-import { recordVisit } from '../../lib/visits';
+import { describeDevice, recordVisit } from '../../lib/visits';
 
 const recent=new Map<string,number>();
 export const POST:APIRoute=async({request})=>{
@@ -9,10 +9,10 @@ export const POST:APIRoute=async({request})=>{
     if(Date.now()-last<30*60*1000)return Response.json({ok:true,duplicate:true});
     recent.set(key,Date.now());
     if(recent.size>5000)for(const[k,time]of recent)if(Date.now()-time>60*60*1000)recent.delete(k);
-    const data=await request.json().catch(()=>({})),details=await lookupIpDetails(ip),pagePath=clean(data.path,150)||'/';
+    const data=await request.json().catch(()=>({})),details=await lookupIpDetails(ip),pagePath=clean(data.path,150)||'/',userAgent=clean(request.headers.get('user-agent'),240)||'indisponível';
     await recordVisit(request,pagePath,details.location,details.operator);
     try{
-      await sendWhatsApp(`👀 *Novo visitante no site*\n\n📄 Página: ${pagePath}\n📍 Local aproximado: ${details.location}\n📡 Operadora: ${details.operator}\n🌐 IP: ${ip||'indisponível'}\n🖥️ Dispositivo: ${clean(request.headers.get('user-agent'),240)||'indisponível'}\n🕒 ${new Date().toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})}`);
+      await sendWhatsApp(`👀 *Novo visitante no site*\n\n📄 Página: ${pagePath}\n📍 Local aproximado: ${details.location}\n📡 Operadora: ${details.operator}\n🌐 IP: ${ip||'indisponível'}\n🖥️ Dispositivo: ${describeDevice(userAgent)}\n🕒 ${new Date().toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})}`);
       return Response.json({ok:true,notified:true});
     }catch(error){console.error('Visita registrada, mas a notificação falhou:',error);return Response.json({ok:true,notified:false})}
   }catch(error){console.error('Erro ao registrar visita:',error);return Response.json({ok:false},{status:500})}

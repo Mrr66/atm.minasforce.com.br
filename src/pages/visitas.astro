@@ -1,7 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import { dashboardAuth } from '../lib/dashboardAuth';
-import { readVisits } from '../lib/visits';
+import { describeDevice, readVisits } from '../lib/visits';
 const auth=dashboardAuth(Astro.request);
 if(!auth.configured)return new Response('Painel ainda não configurado no servidor.',{status:503});
 if(!auth.authorized)return new Response('Autenticação necessária.',{status:401,headers:{'WWW-Authenticate':'Basic realm="Painel de visitas", charset="UTF-8"'}});
@@ -24,7 +24,7 @@ const fmt=(date:string)=>new Intl.DateTimeFormat('pt-BR',{timeZone:'America/Sao_
     <article class="dashboard-card chart"><h2>Últimos 7 dias</h2><div class="bars">{daily.map(item=><div class="bar-column"><span>{item.count}</span><div class="bar-track"><i style={`height:${Math.max(item.count/maxDaily*100,item.count?8:0)}%`}></i></div><small>{item.day.slice(5).split('-').reverse().join('/')}</small></div>)}</div></article>
     <article class="dashboard-card"><h2>Páginas mais visitadas</h2><ol class="ranking">{pageCounts.length?pageCounts.map(([page,count])=><li><span>{page}</span><strong>{count}</strong></li>):<li class="empty">Nenhuma visita registrada.</li>}</ol></article>
   </section>
-  <section class="dashboard-card recent"><h2>Visitas recentes</h2><div class="table-wrap"><table><thead><tr><th>Data</th><th>Página</th><th>IP</th><th>Região aproximada</th><th>Operadora</th><th>Visitante</th><th>Dispositivo</th></tr></thead><tbody>{visits.slice(0,100).map(v=><tr><td>{fmt(v.at)}</td><td>{v.path}</td><td class="nowrap">{v.ip||'Não registrado'}</td><td>{v.location}</td><td>{v.operator||'Não registrada'}</td><td title={v.visitor}>{v.visitor.slice(0,10)}…</td><td class="device">{v.userAgent}</td></tr>)}</tbody></table>{!visits.length&&<p class="empty">As próximas visitas aparecerão aqui.</p>}</div></section>
+  <section class="dashboard-card recent"><h2>Visitas recentes</h2><div class="table-wrap"><table><thead><tr><th>Data</th><th>Página</th><th>IP</th><th>Região aproximada</th><th>Operadora</th><th>Visitante</th><th>Dispositivo</th></tr></thead><tbody>{visits.slice(0,100).map(v=><tr><td>{fmt(v.at)}</td><td>{v.path}</td><td class="nowrap">{v.ip||'Não registrado'}</td><td>{v.location}</td><td>{v.operator||'Não registrada'}</td><td title={v.visitor}>{v.visitor.slice(0,10)}…</td><td class="device" title={v.userAgent}>{describeDevice(v.userAgent)}</td></tr>)}</tbody></table>{!visits.length&&<p class="empty">As próximas visitas aparecerão aqui.</p>}</div></section>
 </main>
 </Base>
 <style>
