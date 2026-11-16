@@ -4,8 +4,10 @@ import path from 'node:path';
 import { clean, visitorIp } from './notifique';
 
 export type Visit = { at:string; visitor:string; path:string; ip?:string; location:string; operator?:string; userAgent:string };
+export type VideoView = { at:string; visitor:string; video:string; title:string };
 const dataDirectory = process.env.VISITS_DATA_DIR?.trim() || path.join(process.cwd(), 'data');
 const visitsFile = path.join(dataDirectory, 'visits.jsonl');
+const videoViewsFile = path.join(dataDirectory, 'video-views.jsonl');
 
 const knownModels:Record<string,string>={
   'SM-S711B':'Samsung Galaxy S23 FE',
@@ -39,12 +41,17 @@ export function describeDevice(userAgent:string) {
   return parts.join(' · ')||'Dispositivo não identificado';
 }
 
+export function anonymousVisitorId(request:Request) {
+  const ip=visitorIp(request),identity=ip||request.headers.get('user-agent')||'unknown';
+  const salt=process.env.VISIT_HASH_SALT?.trim()||'configure-visit-hash-salt';
+  return createHash('sha256').update(`${salt}:${identity}`).digest('hex');
+}
+
 export async function recordVisit(request:Request, pagePath:string, location:string, operator:string) {
-  const ip=visitorIp(request),identity = ip || request.headers.get('user-agent') || 'unknown';
-  const salt = process.env.VISIT_HASH_SALT?.trim() || 'configure-visit-hash-salt';
+  const ip=visitorIp(request);
   const visit:Visit = {
     at:new Date().toISOString(),
-    visitor:createHash('sha256').update(`${salt}:${identity}`).digest('hex'),
+    visitor:anonymousVisitorId(request),
     path:clean(pagePath,180)||'/', ip:clean(ip,64)||'Indisponível', location:clean(location,180)||'Localização indisponível',
     operator:clean(operator,180)||'Operadora indisponível',
     userAgent:clean(request.headers.get('user-agent'),240)||'Indisponível'
@@ -53,9 +60,22 @@ export async function recordVisit(request:Request, pagePath:string, location:str
   await appendFile(visitsFile,`${JSON.stringify(visit)}\n`,{encoding:'utf8',mode:0o600});
 }
 
+export async function recordVideoView(request:Request, video:string, title:string) {
+  const view:VideoView={at:new Date().toISOString(),visitor:anonymousVisitorId(request),video:clean(video,120),title:clean(title,120)};
+  await mkdir(dataDirectory,{recursive:true,mode:0o700});
+  await appendFile(videoViewsFile,`${JSON.stringify(view)}\n`,{encoding:'utf8',mode:0o600});
+}
+
 export async function readVisits():Promise<Visit[]> {
   try {
     const content=await readFile(visitsFile,'utf8');
     return content.split('\n').filter(Boolean).flatMap(line=>{try{return [JSON.parse(line) as Visit]}catch{return []}});
+  } catch(error:any) { if(error?.code==='ENOENT') return []; throw error; }
+}
+
+export async function readVideoViews():Promise<VideoView[]> {
+  try {
+    const content=await readFile(videoViewsFile,'utf8');
+    return content.split('\n').filter(Boolean).flatMap(line=>{try{return [JSON.parse(line) as VideoView]}catch{return []}});
   } catch(error:any) { if(error?.code==='ENOENT') return []; throw error; }
 }
