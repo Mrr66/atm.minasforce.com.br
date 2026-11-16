@@ -4,6 +4,7 @@ import { anonymousVisitorId, recordVideoView } from '../../lib/visits';
 const allowed:Record<string,string>={
   '/videos/apresentacao.mp4':'Apresentação completa',
   '/videos/produtos.mp4':'Consulta de produtos',
+  'youtube:YuAMm9bklmc':'Consulta de produtos',
   '/videos/pagamento.mp4':'Recebendo pagamento',
   '/videos/estoque.mp4':'Atualização de estoque',
 };
@@ -11,7 +12,7 @@ const recent=new Map<string,number>();
 
 export const POST:APIRoute=async({request})=>{
   try{
-    const data=await request.json().catch(()=>({})),video=String(data.video||''),videoPath=new URL(video,'https://atm.minasforce.com.br').pathname,title=allowed[videoPath];
+    const data=await request.json().catch(()=>({})),video=String(data.video||''),videoPath=video.startsWith('youtube:')?video:new URL(video,'https://atm.minasforce.com.br').pathname,title=allowed[videoPath];
     if(!title)return Response.json({ok:false},{status:400});
     const key=`${anonymousVisitorId(request)}:${videoPath}`,last=recent.get(key)||0;
     if(Date.now()-last<30*60*1000)return Response.json({ok:true,duplicate:true});

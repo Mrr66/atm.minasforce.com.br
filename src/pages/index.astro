@@ -14,7 +14,7 @@ const features=[
 const flow=['Cliente se aproxima','A câmera detecta a presença','O assistente dá boas-vindas','A pergunta é feita por voz','Preço, estoque ou localização aparecem','Atendimento concluído'];
 const demos=[
  ['Apresentação completa','Veja o terminal reconhecendo pessoas e conduzindo o atendimento.','/videos/apresentacao.mp4','/images/poster-apresentacao.webp'],
- ['Consulta de produtos','Uma busca rápida por voz, com dados claros para o cliente.','/videos/produtos.mp4?v=bt709','/images/poster-produtos.webp'],
+ ['Consulta de produtos','Uma busca rápida por voz, com dados claros para o cliente.','youtube:YuAMm9bklmc','/images/poster-produtos.webp'],
  ['Recebendo pagamento','Geração do PIX e conclusão segura da jornada.','/videos/pagamento.mp4','/images/poster-pagamento.webp'],
  ['Atualização de estoque','Rotina do colaborador simplificada por comandos de voz.','/videos/estoque.mp4','/images/poster-estoque.webp'],
 ];
@@ -52,12 +52,13 @@ const demos=[
   </main>
   <footer class="border-t border-white/10 py-10"><div class="shell flex flex-col gap-5 text-sm text-[#7f8c86] md:flex-row md:items-center md:justify-between"><p>© {new Date().getFullYear()} Assistente da Loja · Minas Force</p><div class="flex gap-6"><a href="/privacidade">Privacidade</a><a href="/contato">Contato</a></div></div></footer>
 
-  <dialog id="video-modal"><button class="modal-close" aria-label="Fechar"><X class="mx-auto" size={22}/></button><div class="modal-inner"><video controls playsinline preload="metadata"></video></div></dialog>
+  <dialog id="video-modal"><button class="modal-close" aria-label="Fechar"><X class="mx-auto" size={22}/></button><div class="modal-inner"><video controls playsinline preload="metadata"></video><iframe title="Demonstração em vídeo" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen hidden></iframe></div></dialog>
   <script is:inline>
-    const modal=document.querySelector('#video-modal'),player=modal.querySelector('video');let currentVideo='',currentTitle='';
-    document.querySelectorAll('.demo').forEach(btn=>btn.addEventListener('click',async()=>{player.pause();currentVideo=btn.dataset.video;currentTitle=btn.dataset.title;player.src=currentVideo;player.load();modal.showModal();try{await player.play()}catch{}}));
-    player.addEventListener('playing',()=>{if(!currentVideo)return;const key=`video-view:${currentVideo}`;if(sessionStorage.getItem(key))return;sessionStorage.setItem(key,'1');fetch('/api/video-view',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({video:currentVideo,title:currentTitle}),keepalive:true}).catch(()=>{})});
-    const close=()=>{player.pause();player.removeAttribute('src');player.load();modal.close()};
+    const modal=document.querySelector('#video-modal'),player=modal.querySelector('video'),youtube=modal.querySelector('iframe');let currentVideo='',currentTitle='';
+    const trackView=()=>{if(!currentVideo)return;const key=`video-view:${currentVideo}`;if(sessionStorage.getItem(key))return;sessionStorage.setItem(key,'1');fetch('/api/video-view',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({video:currentVideo,title:currentTitle}),keepalive:true}).catch(()=>{})};
+    document.querySelectorAll('.demo').forEach(btn=>btn.addEventListener('click',async()=>{player.pause();player.removeAttribute('src');player.load();youtube.removeAttribute('src');currentVideo=btn.dataset.video;currentTitle=btn.dataset.title;modal.showModal();if(currentVideo.startsWith('youtube:')){player.hidden=true;youtube.hidden=false;youtube.src=`https://www.youtube-nocookie.com/embed/${currentVideo.slice(8)}?autoplay=1&playsinline=1&rel=0`;trackView()}else{youtube.hidden=true;player.hidden=false;player.src=currentVideo;player.load();try{await player.play()}catch{}}}));
+    player.addEventListener('playing',trackView);
+    const close=()=>{player.pause();player.removeAttribute('src');player.load();youtube.removeAttribute('src');modal.close()};
     modal.querySelector('.modal-close').addEventListener('click',close);modal.addEventListener('click',e=>{if(e.target===modal||e.target.classList.contains('modal-inner'))close()});
   </script>
 </Base>
